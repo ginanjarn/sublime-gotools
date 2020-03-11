@@ -1,0 +1,12 @@
+[
+    {
+        "caption": "Go",
+        "mnemonic": "G",
+        "id": "golang",
+        "children":
+        [
+            { "command": "save", "caption": "Format Code", "mnemonic": "F" },
+            { "command": "gorename", "caption": "Rename", "mnemonic": "R" }
+        ]
+    }
+]
