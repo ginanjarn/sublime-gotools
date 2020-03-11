@@ -202,7 +202,7 @@ class Gocode(sublime_plugin.EventListener):
 
 		env = GolangSettings()
 
-		gocode = subprocess.Popen(["gocode", "-f=csv", "autocomplete", filename, cloc],
+		gocode = subprocess.Popen(["gocode-gomod", "-f=csv", "autocomplete", filename, cloc],
 			stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=env.get_environment())
 
 		out = gocode.communicate(src.encode())[0].decode()
@@ -280,7 +280,7 @@ class Gocode(sublime_plugin.EventListener):
 		# if cmd == "exit":
 			env = GolangSettings()
 
-			gofmt = subprocess.Popen(["gocode","exit"],
+			gofmt = subprocess.Popen(["gocode-gomod","exit"],
 				stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,env=env.get_environment())
 			sout, serr = gofmt.communicate()
 			print(serr.decode())
