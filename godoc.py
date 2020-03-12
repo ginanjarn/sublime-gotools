@@ -38,7 +38,7 @@ class GodocCommand(sublime_plugin.EventListener):
             max_width=600,
             max_height=400)
 		pass
-		
+
 
 	# fetch documentation for package.member
 	def fetch_doc(self,view,name):
@@ -110,7 +110,6 @@ class GodocCommand(sublime_plugin.EventListener):
 		# print(source)
 		working_dir = os.path.dirname(view.file_name())
 
-		working_dir = os.path.dirname(view.file_name())
 		gofmt = subprocess.Popen(["guru","-json","definition",source],
 			stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,env=env.get_environment(),cwd=working_dir)
 		sout, serr = gofmt.communicate()
