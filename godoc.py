@@ -1,6 +1,4 @@
-import sublime
-import sublime_plugin
-import os, subprocess
+import sublime, sublime_plugin, os, subprocess
 from json import loads
 from .gosettings import GolangSettings
 
@@ -156,4 +154,3 @@ class GodocCommand(sublime_plugin.EventListener):
 	def goto_definition(self,view,name):
 		view.window().open_file(name,sublime.ENCODED_POSITION)
 		# pass
-		
