@@ -1,9 +1,22 @@
-import sublime, sublime_plugin, subprocess, os
+import sublime, sublime_plugin, subprocess, os, sys
+
 
 def get_env():
 	env = os.environ.copy()
-	env["PATH"]=":".join(["/home/ginanjarn/go/bin","/home/ginanjarn/App/go/bin"])
-	env["GOPATH"]="/home/ginanjarn/go"
+	settings = sublime.load_settings("go.sublime-settings")
+	gopath = settings.get("GOPATH",None)
+	goroot = settings.get("GOROOT",None)
+
+	if sys.platform != 'win32':
+		if not gopath:
+			print('GOPATH not defined')
+			return
+		if not goroot:
+			print('GOROOT not defined')
+			return
+
+	env["PATH"]=":".join([os.path.join(gopath,"bin"),os.path.join(goroot,"bin")])
+	env["GOPATH"]=gopath
 	return env
 
 class LintGovetCommand(sublime_plugin.TextCommand):
