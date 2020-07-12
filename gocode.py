@@ -105,7 +105,7 @@ class GocodeGofmtCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		view = self.view
 		src = view.substr(sublime.Region(0, view.size()))
-		gofmt = subprocess.Popen(["goimports"],
+		gofmt = subprocess.Popen(["goreturns"],
 			stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000)
 		sout, serr = gofmt.communicate(src.encode())
 		

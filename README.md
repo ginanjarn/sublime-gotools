@@ -14,7 +14,7 @@ Set golang binary and golang app binary in your PATH
 Required package
 * gocode : autocompletion
 >`go get -u github.com/stamblerre/gocode`
-* goimports : auto format and clean imports
->`go get golang.org/x/tools/cmd/goimports`
+* goreturns : auto format and clean imports
+>`go get -u github.com/sqs/goreturns`
 * keepalive : shutdown `gocode` daemon while **sublime text** closed
 >`go get github.com/ginanjarn/sublime-gotools`
