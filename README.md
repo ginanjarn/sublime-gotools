@@ -1,9 +1,11 @@
-# Sublime Text 3 plugin
+# Sublime Text 3 plugin for golang
 
-## What
+# What
+
 This code is modification from gocode sublime plugin.
 
-## Feature
+# Feature
+
 * Autocompletion with `gocode`
 * Documentation with `godef` and `go doc`
 * Format code with following option: [goreturns]
@@ -11,8 +13,7 @@ This code is modification from gocode sublime plugin.
 * Rename with `gorename`
 * Tagging struct with `gomodifytags`
 
-## Requirement
-Set golang binary and golang app binary in your PATH
+# Requirement
 
 Required package
 ```
@@ -22,3 +23,11 @@ go get github.com/sqs/goreturns
 go get golang.org/x/lint/golint
 go get golang.org/x/tools/cmd/gorename
 ```
+
+# Troubleshoot
+
+1. Follow install instruction from [golang.org](https://golang.org/doc/install).
+2. Install [required package](#requirement) defined above.
+
+> Notice
+> Set `go` binary and `go/bin`(if you in posix) or `go\bin`(if you in windows) in your `PATH`.
