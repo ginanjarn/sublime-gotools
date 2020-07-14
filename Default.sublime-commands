@@ -1,0 +1,5 @@
+[
+	{ "caption": "GoTools: Tag", "command": "gotools_tag" },
+	{ "caption": "GoTools: Rename", "command": "gotools_rename" },
+	{ "caption": "GoTools: Install/Update Tools", "command": "gotools_setuptools" },
+]
