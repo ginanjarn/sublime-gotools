@@ -78,21 +78,3 @@ class GotoolsRenameCommand(sublime_plugin.TextCommand):
             return
 
         newsrc = sout.decode()
-        diff = difflib.ndiff(src.splitlines(), newsrc.splitlines())
-        i = 0
-        for line in diff:
-            if line.startswith("?"):  # skip hint lines
-                continue
-
-            l = (len(line)-2)+1
-            if line.startswith("-"):
-                diff_sanity_check(view.substr(
-                    sublime.Region(i, i+l-1)), line[2:])
-                view.erase(edit, sublime.Region(i, i+l))
-            elif line.startswith("+"):
-                view.insert(edit, i, line[2:]+"\n")
-                i += l
-            else:
-                diff_sanity_check(view.substr(
-                    sublime.Region(i, i+l-1)), line[2:])
-                i += l
