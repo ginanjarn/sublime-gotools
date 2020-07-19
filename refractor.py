@@ -21,11 +21,15 @@ class GotoolsTagCommand(sublime_plugin.TextCommand):
         dirname, filename = os.path.dirname(
             view.file_name()), os.path.basename(view.file_name())
 
-        gofmt = subprocess.Popen(["gomodifytags", "-file", filename, "-offset", str(offset), "-transform", "snakecase", "-add-tags", "json", "-add-options",
-                                  "json=omitempty"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000, cwd=dirname)
-        sout, serr = gofmt.communicate(src.encode())
+        try:
+            gmt = subprocess.Popen(["gomodifytags", "-file", filename, "-offset", str(offset), "-transform", "snakecase", "-add-tags", "json", "-add-options",
+                                    "json=omitempty"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000, cwd=dirname)
+        except FileNotFoundError:
+            print("gomodifytags not found in PATH")
+            return
+        sout, serr = gmt.communicate(src.encode())
 
-        if gofmt.returncode != 0:
+        if gmt.returncode != 0:
             print(serr.decode(), end="")
             return
 
@@ -63,18 +67,22 @@ class GotoolsRenameCommand(sublime_plugin.TextCommand):
         thread.start()
 
     def do_rename(self, view, name):
-        src = view.substr(sublime.Region(0, view.size()))
-
-        filename, dirname = os.path.basename(
-            view.file_name()), os.path.dirname(view.file_name())
+        dirname, filename = os.path.dirname(
+            view.file_name()), os.path.basename(view.file_name())
         offset = view.sel()[0].a
 
-        gofmt = subprocess.Popen(["gorename", "-offset", "{}:#{}".format(filename, offset), "-to", name],
-                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000, cwd=dirname)
-        sout, serr = gofmt.communicate(src.encode())
+        try:
+            rnm = subprocess.Popen(["gorename", "-offset", "{}:#{}".format(filename, offset), "-to", name],
+                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000, cwd=dirname)
+        except FileNotFoundError:
+            print("gorename not found in PATH")
+            return
 
-        if gofmt.returncode != 0:
+        sout, serr = rnm.communicate()
+
+        if rnm.returncode != 0:
             print(serr.decode(), end="")
             return
 
         newsrc = sout.decode()
+        sublime.message_dialog("gorename done")
