@@ -111,7 +111,8 @@ class GotoolsFmtCommand(sublime_plugin.TextCommand):
         view = self.view
         src = view.substr(sublime.Region(0, view.size()))
         try:
-            gofmt = subprocess.Popen(["goreturns"],stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000)
+            gofmt = subprocess.Popen(["goreturns"], stdin=subprocess.PIPE,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000)
         except FileNotFoundError:
             print("goreturns not found in PATH")
             return
@@ -171,7 +172,8 @@ class Gocode(sublime_plugin.EventListener):
         filename = view.file_name()
         cloc = "c{0}".format(location)
         try:
-            gocode = subprocess.Popen(["gocode", "-builtin", "-ignore-case", "-unimported-packages", "-f=csv","autocomplete", filename, cloc], stdin=subprocess.PIPE, stdout=subprocess.PIPE, creationflags=0x08000000)
+            gocode = subprocess.Popen(["gocode", "-builtin", "-ignore-case", "-unimported-packages", "-f=csv",
+                                       "autocomplete", filename, cloc], stdin=subprocess.PIPE, stdout=subprocess.PIPE, creationflags=0x08000000)
         except FileNotFoundError:
             print("gocode not found in PATH")
             return
@@ -262,7 +264,8 @@ class Gocode(sublime_plugin.EventListener):
         if not wordstr[0].isalpha():
             return
 
-        thread = threading.Thread(target=self.get_doc, args=(view,  offset, wordstr))
+        thread = threading.Thread(
+            target=self.get_doc, args=(view,  offset, wordstr))
         thread.start()
 
     def get_doc(self, view,  offset, field):
@@ -270,7 +273,8 @@ class Gocode(sublime_plugin.EventListener):
         src = view.substr(sublime.Region(0, view.size()))
 
         try:
-            gofmt = subprocess.Popen(["godef", "-i", "-o", str(offset), "-json"], stdin=subprocess.PIPE,stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000)
+            gofmt = subprocess.Popen(["godef", "-i", "-o", str(offset), "-json"], stdin=subprocess.PIPE,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000)
         except FileNotFoundError:
             print("godef not found in PATH")
             return
@@ -286,10 +290,12 @@ class Gocode(sublime_plugin.EventListener):
         fn = d.get("filename", "")
         pkg = os.path.dirname(fn)
         q = "{}.{}".format(pkg, field) if fn != "" else field
-        view.show_popup("Loading ...", flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY,location=offset, max_width=500, max_height=200)
+        view.show_popup("Loading ...", flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY,
+                        location=offset, max_width=500, max_height=200)
 
         try:
-            gofmt = subprocess.Popen(["go", "doc", "-short", q], stdin=subprocess.PIPE, stdout=subprocess.PIPE,stderr=subprocess.PIPE, creationflags=0x08000000, cwd=dirname)
+            gofmt = subprocess.Popen(["go", "doc", "-short", q], stdin=subprocess.PIPE,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000, cwd=dirname)
         except FileNotFoundError:
             print("go not found in PATH")
             return
@@ -330,5 +336,3 @@ class Gocode(sublime_plugin.EventListener):
         if self.gocode_active == False:
             thread = threading.Thread(target=self.run_gocode,)
             thread.start()
-
-        
