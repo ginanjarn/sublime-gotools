@@ -258,6 +258,7 @@ class Gocode(sublime_plugin.EventListener):
         if hover_zone != sublime.HOVER_TEXT:
             return
 
+        src = view.substr(sublime.Region(0, view.size()))
         word = view.word(position)
         offset = word.a
         wordstr = src[word.a:word.b]
