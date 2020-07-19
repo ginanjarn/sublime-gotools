@@ -110,8 +110,12 @@ class GotoolsFmtCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         view = self.view
         src = view.substr(sublime.Region(0, view.size()))
-        gofmt = subprocess.Popen(["goreturns"],
-                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000)
+        try:
+            gofmt = subprocess.Popen(["goreturns"],stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000)
+        except FileNotFoundError:
+            print("goreturns not found in PATH")
+            return
+
         sout, serr = gofmt.communicate(src.encode())
 
         if gofmt.returncode != 0:
@@ -143,13 +147,8 @@ class Gocode(sublime_plugin.EventListener):
     """Sublime Text gocode integration."""
 
     def __init__(self):
-        """ gocode engine """
-
-        self.GOCODE = "gocode"
-        # self.GOCODE="gocode-gomod"
         self.completions = None
         self.gocode_active = False
-        self.watchers_running = False
 
     def fetch_query_completions(self, view, prefix, location):
         """Fetches the query completions of for the given location
@@ -171,8 +170,11 @@ class Gocode(sublime_plugin.EventListener):
         src = view.substr(sublime.Region(0, view.size()))
         filename = view.file_name()
         cloc = "c{0}".format(location)
-        gocode = subprocess.Popen([self.GOCODE, "-builtin", "-ignore-case", "-unimported-packages", "-f=csv",
-                                   "autocomplete", filename, cloc], stdin=subprocess.PIPE, stdout=subprocess.PIPE, creationflags=0x08000000)
+        try:
+            gocode = subprocess.Popen(["gocode", "-builtin", "-ignore-case", "-unimported-packages", "-f=csv","autocomplete", filename, cloc], stdin=subprocess.PIPE, stdout=subprocess.PIPE, creationflags=0x08000000)
+        except FileNotFoundError:
+            print("gocode not found in PATH")
+            return
 
         out = gocode.communicate(src.encode())[0].decode()
         results = self.generate_completions(out)
@@ -242,8 +244,8 @@ class Gocode(sublime_plugin.EventListener):
         if len(lines) >= 1:
             body = lines[1:]
 
-        def tagline(ln): return "<p>{}</p>".format(ln)
-        body = [tagline(l) for l in body]
+        def ptag(ln): return "<p>{}</p>".format(ln)
+        body = [ptag(l) for l in body]
         html = "<h4>{}</h4><body style=\"margin-left:1em\">{}</body>".format(
             head, "".join(body))
         return html
@@ -254,21 +256,26 @@ class Gocode(sublime_plugin.EventListener):
         if hover_zone != sublime.HOVER_TEXT:
             return
 
-        src = view.substr(sublime.Region(0, view.size()))
         word = view.word(position)
         offset = word.a
         wordstr = src[word.a:word.b]
         if not wordstr[0].isalpha():
             return
 
-        thread = threading.Thread(target=self.get_doc, args=(
-            view, view.file_name(), src, offset, wordstr))
+        thread = threading.Thread(target=self.get_doc, args=(view,  offset, wordstr))
         thread.start()
 
-    def get_doc(self, view, filename, source, pos, field):
-        gofmt = subprocess.Popen(["godef", "-i", "-o", str(pos), "-json"], stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000)
-        sout, serr = gofmt.communicate(source.encode())
+    def get_doc(self, view,  offset, field):
+        dirname = os.path.dirname(view.file_name())
+        src = view.substr(sublime.Region(0, view.size()))
+
+        try:
+            gofmt = subprocess.Popen(["godef", "-i", "-o", str(offset), "-json"], stdin=subprocess.PIPE,stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000)
+        except FileNotFoundError:
+            print("godef not found in PATH")
+            return
+
+        sout, serr = gofmt.communicate(src.encode())
 
         if gofmt.returncode != 0:
             print(serr.decode(), end="")
@@ -279,20 +286,25 @@ class Gocode(sublime_plugin.EventListener):
         fn = d.get("filename", "")
         pkg = os.path.dirname(fn)
         q = "{}.{}".format(pkg, field) if fn != "" else field
+        view.show_popup("Loading ...", flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY,location=offset, max_width=500, max_height=200)
 
-        gofmt = subprocess.Popen(["go", "doc", "-short", q], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, creationflags=0x08000000, cwd=os.path.dirname(filename))
-        sout, serr = gofmt.communicate(source.encode())
+        try:
+            gofmt = subprocess.Popen(["go", "doc", "-short", q], stdin=subprocess.PIPE, stdout=subprocess.PIPE,stderr=subprocess.PIPE, creationflags=0x08000000, cwd=dirname)
+        except FileNotFoundError:
+            print("go not found in PATH")
+            return
+
+        sout, serr = gofmt.communicate()
 
         if gofmt.returncode != 0:
             print(serr.decode(), end="")
+            view.hide_popup()
             return
 
         newsrc = sout.decode()
 
         content = self.line_to_html(newsrc)
-        view.show_popup(content, flags=sublime.HIDE_ON_MOUSE_MOVE_AWAY,
-                        location=pos, max_width=500, max_height=200)
+        view.update_popup(content)
 
     def on_pre_save(self, view):
         if not view.match_selector(0, "source.go"):
@@ -305,46 +317,18 @@ class Gocode(sublime_plugin.EventListener):
         view.run_command('gotools_validate')
 
     def run_gocode(self):
-        subprocess.call(self.GOCODE, creationflags=0x08000000, shell=False)
-
-    def stop_gocode(self):
-        subprocess.call([self.GOCODE, "exit"], creationflags=0x08000000)
+        try:
+            subprocess.call(["gocode"], creationflags=0x08000000)
+        except FileNotFoundError:
+            print("gocode not found in PATH")
+            return
 
     def on_activated_async(self, view):
         if not view.match_selector(0, "source.go"):
-            thread = threading.Thread(target=self.stop_gocode,)
-            thread.start()
-            self.gocode_active = False
             return
 
         if self.gocode_active == False:
             thread = threading.Thread(target=self.run_gocode,)
             thread.start()
-            self.gocode_active = True
 
-        # handle gocode alive
-
-        # if self.watchers_running == False:
-        #     thread1 = threading.Thread(target=self.watch_gocode,daemon=True)
-        #     thread1.start()
-        #     thread2 = threading.Thread(target=self.run_gocode_watcher,daemon=True)
-        #     thread2.start()
-        #     self.watchers_running = True
-
-    def run_gocode_watcher(self):
-        subprocess.call("keepalive", creationflags=0x08000000, daemon=True)
-
-    def watch_gocode(self):
-        HOST = 'localhost'  # Standard loopback interface address (localhost)
-        # Port to listen on (non-privileged ports are > 1023)
-        PORT = 22345
-        while self.gocode_active:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind((HOST, PORT))
-                s.listen(0)
-                conn, addr = s.accept()
-                with conn:
-                    print('Connected by', addr)
-                    pass
-            pass
-        pass
+        
