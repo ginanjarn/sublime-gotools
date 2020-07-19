@@ -25,24 +25,34 @@ def diff_sanity_check(a, b):
 class GotoolsValidateCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         view = self.view
-        work_dir = os.path.dirname(view.file_name())
+        dirname = os.path.dirname(view.file_name())
 
-        thread = threading.Thread(target=self.do_vet, args=(work_dir,))
+        thread = threading.Thread(target=self.do_vet, args=(dirname,))
         thread.start()
 
     def do_vet(self, work_dir):
-        govet = subprocess.Popen(["go", "vet", "."], stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, creationflags=0x08000000, cwd=work_dir)
-        sout, serr = govet.communicate()
-        if govet.returncode != 0:
+        try:
+            gvt = subprocess.Popen(["go", "vet", "."], stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, creationflags=0x08000000, cwd=work_dir)
+        except FileNotFoundError:
+            print("go not found in PATH")
+            return
+
+        sout, serr = gvt.communicate()
+        if gvt.returncode != 0:
             print(serr.decode(), end="")
             print_to_outputpane(serr.decode())
             return
 
-        govet = subprocess.Popen(["golint", "."], stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, creationflags=0x08000000, cwd=work_dir)
-        sout, serr = govet.communicate()
-        if govet.returncode != 0:
+        try:
+            gln = subprocess.Popen(["golint", "."], stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, creationflags=0x08000000, cwd=work_dir)
+        except FileNotFoundError:
+            print("golint not found in PATH")
+            return
+
+        sout, serr = gln.communicate()
+        if gln.returncode != 0:
             print(serr.decode(), end="")
             print_to_outputpane(serr.decode())
             return
