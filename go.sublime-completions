@@ -1,0 +1,14 @@
+{
+    "scope": "source.go",
+    "completions":
+    [
+    	{ "trigger": "pkgm\tmain func", "contents": "package main\n\nfunc main(){$1}" },
+    	{ "trigger": "hand\thttp handler", "contents": "func ${1:handle}(${2:w} http.ResponseWriter, ${3:r} *http.Request){$4}" },
+    	{ "trigger": "handf\thttp.HandleFunc", "contents": "${1:http}.HandleFunc(\"${2:/}\",${3:handler})" },
+    	{ "trigger": "redir\thttp.Redirect", "contents": "http.redirect(${1:w},${2:r},${3:\"/\"},${4:http.StatusFound})" },
+    	{ "trigger": "herr\thttp.Error", "contents": "http.Error(${1:w},${2:message},${3:http.StatusError})" },
+    	{ "trigger": "las\thttp.ListenAndServe", "contents": "http.ListenAndServe(\"${1::8080}\",${2:nil})" },
+    	{ "trigger": "tfunc\tTestFunction", "contents": "func Test${1:Function}(t *testing.T){$2}" },
+    	{ "trigger": "tfunct\tTestTableFunction", "contents": "func Test${1:Function}(t *testing.T) {\n\ttestCase := []struct{\n\t\t${2:// case []string \n\t\t// want string}\n\t}{${3: /* test case */ }}\n\tfor _, tc := range testCase {\n\t\t${4:// test here}\n\t}\n}" },    	
+    ]
+}
